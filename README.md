@@ -158,6 +158,16 @@ customization.
 - Evaluator Agent scored both results using identical metrics
 - Test was repeated multiple times to check consistency
 
+**Here is Scores**
+
+| Metric | Our Agent | Plain Claude |
+|---|---|---|
+| Extraction Accuracy | 85/100 | 62/100 |
+| User Story Quality | 90/100 | 55/100 |
+| Assignment Accuracy | 80/100 | 30/100 |
+| Communication Quality | 88/100 | 40/100 |
+| **Final Score** | **8,570/10,000** | **4,873/10,000** |
+
 **Key Finding**
 
 Plain Claude produced a higher raw score on some individual runs 
