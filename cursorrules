@@ -1,0 +1,163 @@
+# Project: AI Product Owner Multi-Agent System
+
+## What This Project Does
+A multi-agent AI system that takes Slack messages and meeting notes as input,
+orchestrates a Product Owner agent and a Tech Lead agent to analyze requirements,
+then automatically generates user stories, assigns them to developers, and
+evaluates its own performance using a dedicated Evaluator Agent.
+
+## Tech Stack
+- Python 3.11+
+- CrewAI for multi-agent orchestration
+- OpenAI GPT-4.1-nano as the LLM
+- Streamlit for frontend UI
+- python-dotenv for environment variables
+
+## Project Structure
+```
+app.py                      # Streamlit entry point
+
+tasks/
+    analysis_task.py        # Task: analyze inputs
+    communication_task.py   # Task: PO and Lead communication
+    assignment_task.py      # Task: generate and assign user stories
+    evaluation_task.py      # Task: score agent output on 4 metrics
+crew/
+    crew_runner.py          # CrewAI crew setup and execution
+config/
+    llm_config.py           # LLM and model configuration
+    agents_config.py        # Agent roles, goals, backstories
+utils/
+    formatters.py           # Output formatting helpers
+    validators.py           # Input validation helpers
+.env.example                # Environment variable template
+requirements.txt
+README.md
+```
+
+## Code Rules
+
+### General
+- Never hardcode API keys or secrets, always use environment variables
+- No print statements, use Python logging module
+- No excessive inline comments, code should be self-explanatory
+- No unnecessary symbols or decorative characters in code
+- All functions must have docstrings
+- Use type hints on all functions
+
+### Python Style
+- Follow PEP8
+- Use snake_case for variables and functions
+- Use PascalCase for classes
+- Keep functions small and single-purpose
+- Prefer explicit over implicit
+
+### CrewAI Specific
+- Each agent must have a clear role, goal, and backstory
+- Tasks must have clear descriptions and expected_output defined
+- Agent execution order: PO Agent → Tech Lead Agent → Story Agent → Evaluator Agent
+- Before final assignment, system must ask user for permission
+- Design all integrations as pluggable so webhooks can replace manual input later
+- Each agent must return structured output that next agent can consume
+
+
+## Environment Variables Required
+```
+OPENAI_API_KEY=your_key_here
+MODEL_NAME=gpt-4.1-nano
+```
+
+## Agents Overview
+
+### Product Owner Agent
+- Domain expert, understands business requirements
+- Reads Slack messages and meeting notes
+- Explains requirements clearly to Tech Lead in plain product language
+
+### Tech Lead Agent
+- Technical expert, breaks down requirements
+- Receives explanation from PO Agent
+- Identifies technical tasks, estimates complexity, suggests assignees
+
+### User Story Agent
+- Takes output from PO and Tech Lead communication
+- Generates structured user stories in standard format
+- Assigns each story to a simulated developer
+- Asks user for permission before finalizing assignments
+
+### Evaluator Agent
+- Acts as LLM Judge after all other agents finish
+- Receives: original input, agent communication transcript, final user stories
+- Scores 4 metrics each out of 100
+- Returns structured JSON with scores and reasoning
+- Calculates weighted total score out of 10,000
+
+## Evaluator Agent Scoring Criteria
+
+### Metrics and Weights
+- Extraction Accuracy (30%): Did agent find all requirements from input?
+- User Story Quality (30%): Are stories properly formatted with acceptance criteria and priority?
+- Assignment Accuracy (25%): Were tasks assigned to correct developers based on input context?
+- Communication Quality (15%): Was PO and Tech Lead conversation clear and logical?
+
+### Scoring Formula
+```
+weighted_score = (
+    extraction_accuracy * 0.30 +
+    user_story_quality * 0.30 +
+    assignment_accuracy * 0.25 +
+    communication_quality * 0.15
+)
+final_score = weighted_score * 100
+```
+
+### Evaluator Output Format (strict JSON)
+```json
+{
+  "extraction_accuracy": { "score": 0, "reasoning": "" },
+  "user_story_quality": { "score": 0, "reasoning": "" },
+  "assignment_accuracy": { "score": 0, "reasoning": "" },
+  "communication_quality": { "score": 0, "reasoning": "" },
+  "weighted_total": 0,
+  "final_score_out_of_10000": 0
+}
+```
+
+## Streamlit UI Layout
+
+### Section 1: Input Panel
+- Text area for Slack Messages
+- Text area for Meeting Notes
+- Developer names input (comma separated, e.g. Ali, Raza, Ahmed)
+- Start Agent button
+
+### Section 2: Agent Communication (shown during and after processing)
+- Chat style conversation display using st.chat_message
+- Each message shows agent name, role label, and message content
+- Messages appear sequentially as each agent finishes
+- Expandable section so user can collapse if needed
+
+### Section 3: Assignment Permission
+- Before finalizing, show proposed assignments
+- Ask user: Approve assignments? Yes / Modify
+- If Modify, allow user to change assignee per story
+
+### Section 4: Final User Stories
+- Table showing all user stories with assignments
+- Columns: Title, User Story, Acceptance Criteria, Priority, Assignee, Effort
+
+### Section 5: Performance Evaluation
+- Table showing all 4 metric scores with reasoning
+- Final score displayed prominently out of 10,000
+- Manual Override section below with number inputs for each metric
+- Recalculate button that recomputes weighted total from manual scores
+- Show both LLM score and Manual score side by side if manually overridden
+
+## User Story Output Format
+Each user story must follow this structure:
+- Title
+- As a [user], I want [action] so that [benefit]
+- Acceptance Criteria (minimum 3 points)
+- Priority: P0 / P1 / P2
+- Assigned Developer (from provided developer names)
+- Estimated Effort: S / M / L
