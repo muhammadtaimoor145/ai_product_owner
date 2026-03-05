@@ -261,5 +261,5 @@ Run the Streamlit app from the project root:
 streamlit run app.py
 ```
 
-Paste relevant Slack messages and meeting notes into the sidebar, click **"Analyze and Generate User Stories"**, and review the generated stories table.
+Paste relevant Slack messages and meeting notes into the sidebar, click **"Start Agent"**, and review the generated stories table.
 
