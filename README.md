@@ -160,7 +160,7 @@ customization.
 
 **Here is Scores**
 
-| Metric | Our Agent | Plain Claude |
+| Metric | Our Agent | Claude |
 |---|---|---|
 | Extraction Accuracy | 85/100 | 62/100 |
 | User Story Quality | 90/100 | 55/100 |
